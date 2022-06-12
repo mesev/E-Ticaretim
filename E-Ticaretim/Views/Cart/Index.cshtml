@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    System.Collections.Generic.List<E_Ticaretim.Controllers.CartController.CartProduct> products = (System.Collections.Generic.List<E_Ticaretim.Controllers.CartController.CartProduct>)ViewData["product"];
+    string resim = "";
+    string emptyBas = "style=display:none";
+     string cleanBasket = "style=display:block";
+     string goPay = "style=display:block";
+}
+
+
+<h1>Index</h1>
+<script>
+    var globalId, globalCount;
+  
+    function CalculateCartTotal() {
+
+        if (globalCount == 0) {
+
+            var productRow = document.getElementById("productRow-" + globalId);
+            productRow.remove();
+        }
+        var subtotal = 0;
+        var itemTotal;
+        var itemCount;
+        var itemTotals = document.getElementsByClassName("ahmet");
+
+        for (i = 0; i < itemTotals.length; i++) {
+            itemTotal = itemTotals[i];
+            subtotal += parseFloat(itemTotal.innerText);
+        }
+        var cartTotal = document.getElementById("hesp");
+        cartTotal.innerText = subtotal;
+        var itemCounts = document.getElementsByClassName("itemCount");
+        subtotal = 0;
+        for (i = 0; i < itemCounts.length; i++) {
+
+            itemCount = itemCounts[i];
+            subtotal += parseInt(itemCount.value);
+        }
+        var countTotal = document.getElementById("cartCount");
+        countTotal.innerText = subtotal;
+
+        var emptyBasket = document.getElementById("bosbasket");
+        alert(subtotal);
+        if (subtotal == 0) {
+            emptyBasket.style.display = "block";
+        }
+        else {
+            emptyBasket.style.display = "none";
+        }
+        
+    }
+
+    function CalculateItemTotal(count, productId) {
+        globalId = productId;
+        globalCount = count;
+        $("#calc-" + productId).load("@Url.Action("CalculateTotal","Cart")/" + productId + "?count=" + count, CalculateCartTotal);
+    }
+
+</script>
+
+@{
+    foreach (E_Ticaretim.Controllers.CartController.CartProduct cartProduct in products)
+    {
+        resim = "/Images/" + cartProduct.Product.ProductId.ToString() + "-0.jpg";
+        <div id="productRow-@cartProduct.Product.ProductId">
+            <input type="number" class="itemCount" onchange="CalculateItemTotal(this.value,@cartProduct.Product.ProductId)" value="@cartProduct.Count" />
+            <img src="@resim" style="width:100px" />
+            @cartProduct.Product.ProductName
+            @cartProduct.Product.Brand.BrandName
+            @cartProduct.Product.Seller.SellerName
+            @cartProduct.Product.Seller.SellerRate
+            @cartProduct.Product.ProductRate
+            @cartProduct.Product.Description
+            <span id="calc-@cartProduct.Product.ProductId" class="ahmet">@cartProduct.Total</span>
+            <button  onclick="CalculateItemTotal(0,@cartProduct.Product.ProductId)">Ürünü Kaldır</button>
+        </div>
+    }
+    <span id="hesp">
+        @ViewData["cartTotal"]
+    </span>
+   
+
+    
+
+    <a href="~/">Alışverişe Devam Et</a>
+    @if(products.Count == 0)
+    {
+        goPay = "style=display:none";
+        emptyBas = "style=display:block";
+        cleanBasket="style=display:none";
+    }
+     <a  href="~/cart/EmptyBasket">Sepeti Boşalt</a>
+    <a @goPay href="/payment/checkLogIn">Ödemeye Geç</a>
+    <div @emptyBas id="bosbasket">Sepet Boş</div>
+}
